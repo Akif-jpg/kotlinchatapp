@@ -30,35 +30,46 @@
     <button onclick="sendMessage()">Send</button>
 
     <script>
+
         let websocket;
 
         function connect() {
             let username = document.getElementById("username").value;
-            websocket = new WebSocket("http://192.168.1.106:7070/chat"); // Javalin portunuzu ayarlayın
 
+            websocket = new WebSocket("ws://localhost:7070/chat");// connect to web socket
             websocket.onopen = function () {
-                websocket.send(username); // İlk mesaj olarak ismi gönder
+                websocket.send(username +" named user connected");
             };
-
             websocket.onmessage = function (event) {
                 let chatbox = document.getElementById("chatbox");
                 chatbox.innerHTML = event.data;
-                chatbox.scrollTop = chatbox.scrollHeight; // Otomatik aşağı kaydır
+                chatbox.scrollTop = chatbox.scrollHeight;
+                websocket.send("connect");
             };
         }
 
+
+
+
+
         function sendMessage() {
-            let username = document.getElementById("username").value;
-            let message = document.getElementById("message").value;
-            websocket.send(username + ": " + message);
-            document.getElementById("message").value = "";
+            if (websocket.readyState === WebSocket.OPEN) {
+                let usernameInput = document.getElementById("username");
+                let messageInput = document.getElementById("message");
+
+                if (usernameInput && messageInput) {
+                    let username = usernameInput.value;
+                    let message = messageInput.value;
+                    websocket.send(username + ": " + message);
+                    messageInput.value = "";
+                } else {
+                    console.error("Username or message input element not found.");
+                }
+            } else {
+                console.error("WebSocket connection is not open.");
+            }
         }
 
-        function updateChatbox() {
-            websocket.send("connect");
-        }
-
-        setInterval(updateChatbox, 2000);
     </script>
 </body>
 
